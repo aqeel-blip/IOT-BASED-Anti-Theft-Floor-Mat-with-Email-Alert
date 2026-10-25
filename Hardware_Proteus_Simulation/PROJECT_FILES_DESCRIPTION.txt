@@ -1,0 +1,63 @@
+================================================================================
+            HARDWARE / PROTEUS SIMULATION — File Descriptions
+================================================================================
+
+This folder contains the HARDWARE side of the project:
+- Proteus circuit simulation files
+- Arduino code (early basic version)
+- Related documentation
+
+================================================================================
+FILES AND FOLDERS:
+================================================================================
+
+Proteus_Simulation_Backup.rar
+    → Compressed backup of the entire Proteus simulation project.
+      Extract this if the main files are corrupted.
+
+Proteus_Simulation_and_Arduino_Code/
+    ├── theift detection.pdsprj
+    │   → The main PROTEUS SIMULATION FILE. Open this in Proteus 8 to see
+    │     the complete circuit schematic with Arduino, sensors, servo, LCD,
+    │     and buzzer. You can simulate the circuit without physical hardware.
+    │
+    ├── *.workspace files
+    │   → Proteus workspace files (auto-generated). These store layout
+    │     preferences for different team members' computers. You can ignore these.
+    │
+    ├── Circuit_Explanation.docx
+    │   → Document explaining how the circuit works, component connections,
+    │     and the overall hardware design.
+    │
+    ├── Progress_Presentation.pptx
+    │   → Presentation slides showing hardware progress and milestones.
+    │
+    ├── DFRobot_LCD_Library.zip
+    │   → Arduino library for the DFRobot I2C RGB LCD display.
+    │     To install: Arduino IDE → Sketch → Include Library → Add .ZIP Library
+    │
+    ├── Arduino_Sketch_v1_Basic/
+    │   └── footstep_v1.ino
+    │       → EARLY/BASIC version of the Arduino code.
+    │         This version only uses piezo sensors + LCD display.
+    │         It does NOT communicate with the Flask server.
+    │         Used for initial testing and Proteus simulation.
+    │
+    └── Project Backups/
+        → Auto-generated Proteus backup files (timestamped).
+          Useful for recovering previous versions if needed.
+
+================================================================================
+NOTES:
+================================================================================
+
+- The FINAL Arduino code (with Flask serial communication, servo sweep,
+  buzzer melodies, and IR sensor) is located at:
+      Website_Flask_Application/home_security/arduino/home_security.ino
+
+- The basic sketch in this folder (footstep_v1.ino) was the first version
+  used during development and for Proteus simulation only.
+
+- To run the Proteus simulation, you need Proteus 8 Professional.
+
+================================================================================

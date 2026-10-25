@@ -1,0 +1,111 @@
+================================================================================
+      IoT-Based Anti-Theft System With Gmail Email Alert
+                     Final Year Project (FYP)
+================================================================================
+
+PROJECT TITLE:
+    IoT-Based Anti-Theft Floor Mat System with Gmail Email Alerts
+
+DESCRIPTION:
+    This project is an IoT-based home security system that uses:
+    - Piezoelectric / voltage sensors embedded in a floor mat to detect footsteps
+    - A servo motor that sweeps to point a camera toward the detected direction
+    - A webcam with face recognition to identify known family members vs unknown intruders
+    - Gmail email alerts sent automatically when someone is detected
+    - A Flask web application for managing family members and viewing live detection
+    - An Arduino board that communicates with the Flask server over serial (USB)
+
+HOW THE SYSTEM WORKS:
+    1. Voltage sensors (left and right) on a floor mat detect when someone steps on it
+    2. Arduino reads which side was triggered (left or right)
+    3. Arduino rotates the servo motor to aim the camera toward that side
+    4. Arduino sends the trigger direction ("L" or "R") to the Flask server via serial
+    5. Flask activates the webcam and performs face recognition
+    6. If the face matches a registered family member → welcome email is sent
+    7. If the face is unknown → security alert email is sent with the captured photo
+    8. Arduino plays a buzzer melody (welcome) or alarm (unknown) accordingly
+
+================================================================================
+                        FOLDER STRUCTURE
+================================================================================
+
+FYP/
+│
+├── PROJECT_OVERVIEW.txt              ← This file (project description)
+│
+├── Documents/
+│   ├── FYP_Information.docx          ← General FYP information & guidelines
+│   ├── FYP_Proposal.docx             ← Original project proposal submitted
+│   ├── Thesis_Draft.pdf              ← Earlier draft of the thesis
+│   └── Thesis_Final.pdf              ← Final submitted thesis document
+│
+├── Presentations/
+│   ├── Final_Presentation.pptx       ← Final FYP defense presentation
+│   ├── IoT_Anti_Theft_Presentation.pptx ← IoT project-specific presentation
+│   └── Poster_Template.pptx          ← Poster design for exhibition/display
+│
+├── Hardware_Proteus_Simulation/       ← Arduino code + Proteus circuit simulation
+│   ├── PROJECT_FILES_DESCRIPTION.txt  ← Description of hardware files
+│   ├── Proteus_Simulation_Backup.rar  ← Backup of the Proteus project
+│   └── Proteus_Simulation_and_Arduino_Code/
+│       ├── theift detection.pdsprj     ← Proteus circuit simulation file
+│       ├── Circuit_Explanation.docx    ← Explanation of the circuit design
+│       ├── Progress_Presentation.pptx  ← Progress update presentation
+│       ├── DFRobot_LCD_Library.zip     ← LCD library for Arduino
+│       ├── Arduino_Sketch_v1_Basic/    ← Basic Arduino sketch (early version)
+│       │   └── footstep_v1.ino        ← Arduino code for piezo sensor + LCD
+│       └── Project Backups/            ← Proteus auto-backups
+│
+├── Website_Flask_Application/         ← Flask web application (main software)
+│   ├── WEBSITE_SETUP_INSTRUCTIONS.txt ← How to set up and run the website
+│   └── home_security/                 ← Flask project root
+│       ├── app.py                     ← MAIN Flask server (run this file)
+│       ├── app_template_with_placeholders.py ← Template version with placeholder emails
+│       ├── requirements.txt           ← Python package dependencies
+│       ├── database.json              ← JSON database (members + alerts)
+│       ├── arduino/
+│       │   └── home_security.ino      ← Arduino sketch (FINAL version for this system)
+│       ├── templates/
+│       │   ├── index.html             ← Members page (add/view family members)
+│       │   └── detection.html         ← Live detection page (camera + alerts)
+│       ├── static/uploads/
+│       │   ├── members/               ← Stored photos of registered family members
+│       │   ├── alerts/                ← Captured frames from detection alerts
+│       │   └── unknowns/              ← Photos of unknown/unrecognized faces
+│       ├── dlib-19.22.99-cp310-*.whl  ← Pre-built dlib wheel for Python 3.10
+│       ├── dlib-19.24.1-cp311-*.whl   ← Pre-built dlib wheel for Python 3.11
+│       ├── dlib-19.24.99-cp312-*.whl  ← Pre-built dlib wheel for Python 3.12
+│       ├── face_recognition_models_library.zip ← Face recognition models
+│       └── .venv/                     ← Python virtual environment (auto-created)
+│
+└── HOW_TO_RUN_IN_PYCHARM.txt         ← Step-by-step instructions to run in PyCharm
+
+================================================================================
+                        TECHNOLOGIES USED
+================================================================================
+
+Hardware:
+    - Arduino Uno
+    - Piezoelectric / Voltage sensors (left: A0, right: A1)
+    - Servo Motor (pin D5)
+    - Buzzer (pin D6)
+    - IR Sensor (pin D7) for system restart
+    - USB webcam
+
+Software:
+    - Python 3.10 / 3.11 / 3.12
+    - Flask (web framework)
+    - OpenCV (camera + image processing)
+    - face_recognition (face detection + matching using dlib)
+    - yagmail (Gmail email sending)
+    - pyserial (Arduino serial communication)
+    - Arduino IDE (for uploading Arduino code)
+    - Proteus (circuit simulation)
+
+================================================================================
+                        TEAM / CONTACT
+================================================================================
+
+(Add your team member names, roll numbers, and supervisor name here)
+
+================================================================================

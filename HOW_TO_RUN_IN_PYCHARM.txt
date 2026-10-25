@@ -1,0 +1,252 @@
+================================================================================
+           HOW TO RUN THE WEBSITE IN PYCHARM — Step-by-Step
+================================================================================
+
+            IoT-Based Anti-Theft System With Gmail Email Alert
+                     Website (Flask Application)
+
+================================================================================
+PREREQUISITES (Install These First)
+================================================================================
+
+1. PyCharm IDE
+   - Download: https://www.jetbrains.com/pycharm/download/
+   - Community Edition (free) is sufficient
+   - Install and launch PyCharm
+
+2. Python 3.10, 3.11, or 3.12
+   - Download: https://www.python.org/downloads/
+   - During installation, CHECK the box "Add Python to PATH"
+   - Verify by opening Command Prompt and typing:  python --version
+
+3. CMake & Visual Studio Build Tools (needed for dlib/face_recognition)
+   - Download CMake: https://cmake.org/download/
+   - CHECK "Add CMake to PATH" during installation
+   - Download Visual Studio Build Tools:
+     https://visualstudio.microsoft.com/visual-cpp-build-tools/
+   - Install "Desktop development with C++" workload
+
+4. Arduino IDE (optional — only if you want to use the hardware)
+   - Download: https://www.arduino.cc/en/software
+
+================================================================================
+STEP-BY-STEP: OPENING THE PROJECT IN PYCHARM
+================================================================================
+
+STEP 1: Open the Project
+   - Launch PyCharm
+   - Click "Open" (not "New Project")
+   - Navigate to this folder:
+         FYP → Website_Flask_Application → home_security
+   - Select the "home_security" folder and click OK
+   - PyCharm will open the project
+
+STEP 2: Set Up the Python Interpreter (Virtual Environment)
+   - Go to: File → Settings → Project: home_security → Python Interpreter
+   - Click the gear icon ⚙ → Add Interpreter → Add Local Interpreter
+   - Select "Virtualenv Environment"
+   - Choose "New Environment"
+   - Base interpreter: Select your installed Python (3.10/3.11/3.12)
+   - Location: leave as default (it will create a .venv folder)
+   - Click OK
+   - PyCharm will create the virtual environment
+
+   NOTE: If a .venv folder already exists in the project, PyCharm may
+   detect it automatically. Click "OK" to use the existing one.
+
+STEP 3: Install Dependencies
+   OPTION A — Using PyCharm Terminal:
+   - Open Terminal in PyCharm (View → Tool Windows → Terminal)
+   - Make sure you see (.venv) at the start of the prompt
+   - Run these commands ONE BY ONE:
+
+         pip install flask
+         pip install opencv-python
+         pip install numpy
+         pip install yagmail
+         pip install pyserial
+
+   - For dlib (choose based on your Python version):
+     Python 3.10:
+         pip install dlib-19.22.99-cp310-cp310-win_amd64.whl
+     Python 3.11:
+         pip install dlib-19.24.1-cp311-cp311-win_amd64.whl
+     Python 3.12:
+         pip install dlib-19.24.99-cp312-cp312-win_amd64.whl
+
+   - Then install face_recognition:
+         pip install face-recognition
+
+   OPTION B — Using requirements.txt:
+   - In PyCharm Terminal, run:
+         pip install -r requirements.txt
+   - NOTE: This may fail for dlib. If it does, install dlib manually
+     using the .whl file as shown above, then run pip install -r
+     requirements.txt again.
+
+STEP 4: Configure the Run Configuration
+   - In PyCharm, right-click on "app.py" in the project explorer
+   - Click "Run 'app'"
+   - OR set up manually:
+     - Go to: Run → Edit Configurations
+     - Click "+" → Python
+     - Name: "Home Security Server"
+     - Script path: Browse to app.py
+     - Working directory: Should be the home_security folder
+     - Python interpreter: Select the .venv interpreter
+     - Click OK
+
+STEP 5: Run the Application
+   - Click the green ▶ Run button (or press Shift+F10)
+   - You should see output like:
+         Scanning X port(s) for Arduino…
+         * Running on http://127.0.0.1:5000
+   - Open your browser and go to: http://127.0.0.1:5000
+
+================================================================================
+USING THE APPLICATION
+================================================================================
+
+The website has TWO pages:
+
+PAGE 1: Members Page (http://127.0.0.1:5000/)
+   - Add family members by uploading their photo or capturing from webcam
+   - Enter their name and relation (Father, Mother, Brother, etc.)
+   - The system extracts face data and stores it in database.json
+   - You can also delete members from here
+
+PAGE 2: Detection Page (http://127.0.0.1:5000/detection)
+   - Click "Start Camera" to begin live face detection
+   - The system continuously scans for faces in the camera feed
+   - KNOWN person (green box) → Name displayed, welcome email sent
+   - UNKNOWN person (red box) → Alert email sent with captured photo
+   - Arduino status bar shows connection state, sensor triggers, etc.
+   - Detection log shows history of all detections
+
+================================================================================
+EMAIL CONFIGURATION
+================================================================================
+
+The app sends emails via Gmail. To configure:
+
+1. Open app.py in PyCharm
+
+2. Find these lines (around line 46-48):
+       EMAIL_USER         = "your_gmail@gmail.com"
+       EMAIL_APP_PASSWORD = "your_app_password"
+       ALERT_EMAIL        = "receiver_email@gmail.com"
+
+3. Replace with your actual Gmail credentials:
+   - EMAIL_USER: Your Gmail address (the sender)
+   - EMAIL_APP_PASSWORD: A Gmail App Password (NOT your regular password)
+   - ALERT_EMAIL: The email address that receives alerts
+
+4. How to get a Gmail App Password:
+   a. Go to: https://myaccount.google.com/apppasswords
+   b. Sign in to your Google account
+   c. Select app: "Mail", Select device: "Windows Computer"
+   d. Click "Generate"
+   e. Copy the 16-character password
+   f. Paste it as EMAIL_APP_PASSWORD in app.py
+
+   NOTE: You must have 2-Step Verification enabled on your Google
+   account to use App Passwords.
+
+================================================================================
+ARDUINO SETUP (OPTIONAL — for full hardware integration)
+================================================================================
+
+1. Open Arduino IDE
+2. Open the file: Website_Flask_Application/home_security/arduino/home_security.ino
+3. Connect your Arduino Uno via USB
+4. Select Board: "Arduino Uno" and the correct COM port
+5. Upload the sketch
+6. The Arduino will print "HOME_SECURITY_READY" on serial
+7. When you run app.py, it will auto-detect the Arduino on any COM port
+
+Pin Connections:
+   - D5: Servo Motor (signal wire)
+   - D6: Buzzer
+   - D7: IR Sensor
+   - A0: Left Voltage Sensor (floor mat)
+   - A1: Right Voltage Sensor (floor mat)
+
+If no Arduino is connected, the system still works — it just uses the
+camera without sensor-triggered detection.
+
+================================================================================
+IMPORTANT FILES EXPLAINED
+================================================================================
+
+app.py
+   The MAIN application file. This is the Flask server that handles:
+   - Web pages (index.html, detection.html)
+   - Camera feeds (capture for member photos, live detection)
+   - Face recognition (matching faces against registered members)
+   - Email alerts (unknown person alert, known person welcome)
+   - Arduino serial communication
+   → YOU RUN THIS FILE TO START THE SYSTEM
+
+app_template_with_placeholders.py (File Name-->1)
+   A TEMPLATE version of app.py with placeholder email addresses.
+   Use this as a starting point if you want a clean copy without
+   any real credentials. It is NOT meant to be run directly — copy
+   its contents to app.py and fill in your email details.
+
+database.json
+   Stores all registered family members (with face encodings) and
+   detection alert logs. This file is auto-created and auto-updated.
+   If you want to start fresh, delete this file.
+
+requirements.txt
+   Lists all Python packages needed. Used with: pip install -r requirements.txt
+
+templates/index.html
+   The Members page — register family members with photo + name + relation
+
+templates/detection.html
+   The Detection page — live camera feed with face recognition, popups,
+   and detection history log
+
+arduino/home_security.ino
+   The FINAL Arduino sketch for the complete system. Upload this to
+   your Arduino Uno using Arduino IDE.
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+PROBLEM: "No module named face_recognition"
+   → Install dlib first using the .whl file (see Step 3), then:
+     pip install face-recognition
+
+PROBLEM: "dlib installation failed"
+   → Make sure CMake is installed and added to PATH
+   → Make sure Visual Studio Build Tools (C++) are installed
+   → Use the pre-built .whl file instead of pip install dlib
+
+PROBLEM: "Camera not opening"
+   → Make sure no other app is using the webcam
+   → Try changing the camera index in app.py:
+     Change open_camera(1) to open_camera(0)
+     (Line ~557 and ~666 in app.py)
+
+PROBLEM: "Email not sending"
+   → Check that EMAIL_USER, EMAIL_APP_PASSWORD, ALERT_EMAIL are correct
+   → Make sure you're using a Gmail App Password, not your regular password
+   → Enable 2-Step Verification on your Google account first
+
+PROBLEM: "Arduino not detected"
+   → Make sure Arduino IDE can see the Arduino (Tools → Port)
+   → Upload the home_security.ino sketch first
+   → Click "Reconnect Arduino" button on the detection page
+   → Check that the baud rate is 9600 in both app.py and the Arduino sketch
+
+PROBLEM: "ModuleNotFoundError: No module named 'cv2'"
+   → Run: pip install opencv-python
+
+PROBLEM: "Port already in use" when running Flask
+   → Another instance might be running. Close it first.
+   → Or change the port: app.run(debug=False, port=5001)
+
+================================================================================
