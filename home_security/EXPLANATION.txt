@@ -1,0 +1,6 @@
+flask
+opencv-python
+face-recognition
+numpy
+yagmail
+pyserial

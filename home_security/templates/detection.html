@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Live Detection — Home Security</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #0a0e1a;
+      --surface: #111827;
+      --card:    #161d2e;
+      --border:  #1e2d45;
+      --accent:  #00d4ff;
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --fh: 'Syne', sans-serif;
+      --fb: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: var(--fb); min-height: 100vh;
+      transition: background .4s;
+    }
+    body.mode-red   { background: #130000; }
+    body.mode-green { background: #001308; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 66px;
+      background: rgba(17,24,39,.97); border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 200; backdrop-filter: blur(14px);
+    }
+    .brand { font-family: var(--fh); font-size: 1.3rem; font-weight: 800; display: flex; align-items: center; gap: .55rem; }
+    .brand span { color: var(--accent); }
+    .pulse { width: 9px; height: 9px; border-radius: 50%; background: var(--green); animation: pr 1.4s ease infinite; }
+    @keyframes pr { 0%{box-shadow:0 0 0 0 rgba(34,197,94,.7)}70%{box-shadow:0 0 0 8px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)} }
+    .nav-links { display: flex; gap: .7rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: .88rem; font-weight: 500; padding: .4rem .9rem; border-radius: 7px; transition: all .2s; }
+    .nav-links a:hover  { color: var(--text); background: var(--border); }
+    .nav-links a.active { color: var(--accent); background: var(--border); }
+
+    /* ── OVERLAY — red border flash for unknown ── */
+    #red-overlay {
+      position: fixed; inset: 0; pointer-events: none; z-index: 50;
+      border: 5px solid transparent; display: none;
+      animation: flicker .5s ease infinite alternate;
+    }
+    @keyframes flicker { from{opacity:.5} to{opacity:1} }
+    body.mode-red  #red-overlay   { display: block; border-color: rgba(239,68,68,.7); }
+
+    /* ── POPUPS ── */
+    .popup {
+      display: none; position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%,-50%) scale(.85);
+      z-index: 300; border-radius: 20px; padding: 2.5rem 2rem;
+      min-width: 340px; max-width: 440px; text-align: center;
+      animation: pop-in .35s cubic-bezier(.34,1.56,.64,1) forwards;
+    }
+    @keyframes pop-in { from{transform:translate(-50%,-50%) scale(.85);opacity:0} to{transform:translate(-50%,-50%) scale(1);opacity:1} }
+    .popup.show { display: block; }
+
+    /* Unknown popup — red */
+    #popup-unknown {
+      background: #150505;
+      border: 2px solid var(--red);
+      box-shadow: 0 0 60px rgba(239,68,68,.35);
+    }
+    /* Known popup — green */
+    #popup-known {
+      background: #051005;
+      border: 2px solid var(--green);
+      box-shadow: 0 0 60px rgba(34,197,94,.3);
+    }
+
+    .popup-icon { font-size: 3.5rem; margin-bottom: .75rem; animation: shake .4s ease infinite alternate; }
+    @keyframes shake { from{transform:rotate(-5deg)} to{transform:rotate(5deg)} }
+    .popup-title { font-family: var(--fh); font-size: 1.4rem; font-weight: 800; margin-bottom: .35rem; }
+    .popup-sub   { color: var(--muted); font-size: .88rem; margin-bottom: 1.1rem; }
+    .popup-name  { font-weight: 700; font-size: 1.1rem; }
+    .popup-time  { color: var(--muted); font-size: .78rem; margin: .3rem 0 1.2rem; }
+    .popup-img   { width: 110px; height: 110px; border-radius: 50%; object-fit: cover; margin: 0 auto 1rem; display: block; }
+
+    #popup-unknown .popup-title { color: var(--red); }
+    #popup-unknown .popup-img   { border: 3px solid var(--red); }
+    #popup-known   .popup-title { color: var(--green); }
+    #popup-known   .popup-img   { border: 3px solid var(--green); }
+
+    .btn-dismiss {
+      border: none; border-radius: 10px; padding: .75rem 2rem;
+      font-size: .95rem; font-weight: 600; cursor: pointer; transition: opacity .2s;
+      color: #fff;
+    }
+    #popup-unknown .btn-dismiss { background: var(--red); }
+    #popup-known   .btn-dismiss { background: var(--green); color: #000; }
+    .btn-dismiss:hover { opacity: .85; }
+
+    /* ── ARDUINO STATUS BAR ── */
+    .arduino-bar {
+      background: var(--card); border-bottom: 1px solid var(--border);
+      padding: .55rem 2.5rem; display: flex; align-items: center; gap: 1.5rem;
+      font-size: .82rem; flex-wrap: wrap;
+    }
+    .ard-item { display: flex; align-items: center; gap: .4rem; }
+    .ard-dot  { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+    .ard-dot.on  { background: var(--green); }
+    .ard-dot.red { background: var(--red); }
+    .ard-dot.blue{ background: var(--accent); }
+
+    /* ── PAGE ── */
+    .page { max-width: 1380px; margin: 0 auto; padding: 2rem 2.5rem; }
+
+    /* ── CAMERA BLOCK ── */
+    .cam-card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; overflow: hidden; margin-bottom: 2rem; }
+    .cam-toolbar {
+      display: flex; align-items: center; gap: 1rem; padding: 1rem 1.4rem;
+      border-bottom: 1px solid var(--border); flex-wrap: wrap;
+    }
+    .live-badge { display: flex; align-items: center; gap: .4rem; font-size: .85rem; font-weight: 600; }
+    .live-dot   { width: 9px; height: 9px; border-radius: 50%; background: var(--muted); }
+    .live-dot.on  { background: var(--red); animation: pr 1s ease infinite; }
+    .live-text    { color: var(--muted); }
+    .live-text.on { color: var(--red); }
+    .ml-auto { margin-left: auto; }
+
+    #cam-stream { width: 100%; display: block; background: #000; min-height: 380px; }
+    #cam-holder {
+      min-height: 380px; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; color: var(--muted); gap: .7rem;
+    }
+    #cam-holder .big { font-size: 3.5rem; opacity: .25; }
+
+    .legend { display: flex; gap: 1rem; padding: .7rem 1.4rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+    .leg-item { display: flex; align-items: center; gap: .4rem; font-size: .78rem; color: var(--muted); }
+    .leg-dot  { width: 9px; height: 9px; border-radius: 50%; }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; gap: .4rem;
+      padding: .6rem 1.15rem; border-radius: 9px; border: none;
+      font-family: var(--fb); font-size: .86rem; font-weight: 500;
+      cursor: pointer; transition: all .2s; text-decoration: none; white-space: nowrap;
+    }
+    .btn-green  { background: rgba(34,197,94,.13); border: 1px solid rgba(34,197,94,.35); color: var(--green); }
+    .btn-green:hover  { background: rgba(34,197,94,.24); }
+    .btn-red    { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.3);  color: var(--red); }
+    .btn-red:hover    { background: rgba(239,68,68,.22); }
+    .btn-outline{ background: transparent; border: 1px solid var(--border); color: var(--text); }
+    .btn-outline:hover{ border-color: var(--accent); color: var(--accent); }
+
+    /* ── ALERTS LOG ── */
+    .log-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+    .sec-title  { font-family: var(--fh); font-size: .82rem; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; }
+    .alerts-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(255px, 1fr)); gap: 1rem; }
+    .alert-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 13px; overflow: hidden; transition: transform .2s;
+    }
+    .alert-card:hover { transform: translateY(-2px); }
+    .alert-card.unk   { border-color: rgba(239,68,68,.3); }
+    .alert-card.kn    { border-color: rgba(34,197,94,.25); }
+    .ac-img   { width: 100%; height: 135px; object-fit: cover; background: var(--bg); }
+    .ac-body  { padding: .85rem; }
+    .ac-badge {
+      display: inline-block; font-size: .7rem; font-weight: 600;
+      padding: .15rem .55rem; border-radius: 50px; margin-bottom: .4rem;
+    }
+    .badge-unk { background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3); color: var(--red); }
+    .badge-kn  { background: rgba(34,197,94,.1);  border: 1px solid rgba(34,197,94,.3);  color: var(--green); }
+    .ac-name   { font-weight: 600; font-size: .88rem; margin-bottom: .18rem; }
+    .ac-meta   { color: var(--muted); font-size: .75rem; }
+
+    .empty { text-align: center; padding: 2.5rem; color: var(--muted); background: var(--card); border: 1px solid var(--border); border-radius: 13px; }
+    .empty .ei { font-size: 2.5rem; opacity: .25; margin-bottom: .6rem; }
+  </style>
+</head>
+<body>
+
+<!-- Red border overlay (unknown alert) -->
+<div id="red-overlay"></div>
+
+<!-- POPUP: Unknown person -->
+<div id="popup-unknown" class="popup">
+  <div class="popup-icon">🚨</div>
+  <div class="popup-title">UNKNOWN PERSON!</div>
+  <div class="popup-sub">An unrecognised face was detected. Alert email sent.</div>
+  <img id="pu-img" class="popup-img"
+       src="https://ui-avatars.com/api/?name=?&background=150505&color=ef4444&size=200" alt="unknown"/>
+  <div class="popup-name" id="pu-name">Unknown Person</div>
+  <div class="popup-time" id="pu-time"></div>
+  <button class="btn-dismiss" onclick="dismissPopup()">✅ Dismiss</button>
+</div>
+
+<!-- POPUP: Known person -->
+<div id="popup-known" class="popup">
+  <div class="popup-icon" style="animation:none;">👋</div>
+  <div class="popup-title">Welcome Home!</div>
+  <div class="popup-sub">Family member recognised. Welcome email sent.</div>
+  <img id="pk-img" class="popup-img"
+       src="https://ui-avatars.com/api/?name=?&background=051005&color=22c55e&size=200" alt="known"/>
+  <div class="popup-name" id="pk-name"></div>
+  <div class="popup-time" id="pk-time"></div>
+  <button class="btn-dismiss" onclick="dismissPopup()">👍 OK</button>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="brand"><div class="pulse"></div>Home <span>Security</span></div>
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}">👥 Members</a>
+    <a href="{{ url_for('detection') }}" class="active">📷 Detection</a>
+  </div>
+</nav>
+
+<!-- Arduino status bar -->
+<div class="arduino-bar">
+  <div class="ard-item">
+    <div class="ard-dot" id="ard-conn-dot"></div>
+    <span id="ard-conn-text">Arduino: Checking…</span>
+  </div>
+  <div class="ard-item">
+    <span style="color:var(--muted); font-size:.78rem;">Port:</span>
+    <span id="ard-port" style="color:var(--accent); font-size:.82rem; font-weight:600;">—</span>
+  </div>
+  <div class="ard-item">
+    <div class="ard-dot" id="ard-side-dot"></div>
+    <span id="ard-side-text">Sensor: None</span>
+  </div>
+  <div class="ard-item">
+    <div class="ard-dot" id="ard-reply-dot"></div>
+    <span id="ard-reply-text">Reply: —</span>
+  </div>
+  <div style="margin-left:auto;">
+    <button class="btn btn-outline" style="font-size:.78rem; padding:.35rem .8rem;"
+            onclick="reconnectArduino()" id="btn-reconnect">
+      🔄 Reconnect Arduino
+    </button>
+  </div>
+</div>
+
+<div class="page">
+
+  <!-- CAMERA -->
+  <div class="cam-card">
+    <div class="cam-toolbar">
+      <div class="live-badge">
+        <div class="live-dot" id="live-dot"></div>
+        <span class="live-text" id="live-text">Camera Off</span>
+      </div>
+      <div class="ml-auto" style="display:flex; gap:.6rem;">
+        <button class="btn btn-green" onclick="startCam()">▶ Start Camera</button>
+        <button class="btn btn-red"   onclick="stopCam()">⏹ Stop Camera</button>
+      </div>
+    </div>
+
+    <div id="cam-holder">
+      <div class="big">📷</div>
+      <p>Press <strong>Start Camera</strong> to begin live detection</p>
+    </div>
+    <img id="cam-stream" src="" alt="live" style="display:none;" />
+
+    <div class="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#22c55e"></div>Known Family Member</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#ef4444"></div>Unknown Person</div>
+      <div class="leg-item"><div class="leg-dot" style="background:#00d4ff"></div>Scanning…</div>
+    </div>
+  </div>
+
+  <!-- ALERTS LOG -->
+  <div class="log-header">
+    <div class="sec-title">📋 Detection Log</div>
+    <button class="btn btn-red" onclick="clearAll()">🗑 Clear All</button>
+  </div>
+
+  <div class="alerts-grid" id="alerts-grid">
+    {% if alerts %}
+      {% for a in alerts %}
+      <div class="alert-card {% if a.is_unknown %}unk{% else %}kn{% endif %}">
+        <img class="ac-img"
+             src="{{ a.frame if a.frame else a.image }}" alt="{{ a.name }}"
+             onerror="this.src='https://ui-avatars.com/api/?name={{ a.name }}&background=161d2e&color=64748b&size=300'" />
+        <div class="ac-body">
+          <span class="ac-badge {% if a.is_unknown %}badge-unk{% else %}badge-kn{% endif %}">
+            {{ '⚠ Unknown' if a.is_unknown else '✓ Known' }}
+          </span>
+          <div class="ac-name">{{ a.name }}</div>
+          <div class="ac-meta">{{ a.relation }} · {{ a.source }}</div>
+          <div class="ac-meta" style="margin-top:.25rem;">🕐 {{ a.created_at }}</div>
+        </div>
+      </div>
+      {% endfor %}
+    {% else %}
+      <div class="empty" style="grid-column:1/-1">
+        <div class="ei">🎉</div>
+        <p>No detections yet. Start the camera to begin monitoring.</p>
+      </div>
+    {% endif %}
+  </div>
+
+</div><!-- /page -->
+
+<script>
+  let camOn     = false;
+  let pollTimer = null;
+  let ardTimer  = null;
+
+  // ── START CAMERA ──────────────────────────────────────────
+  function startCam() {
+    camOn = true;
+    document.getElementById('cam-stream').src = '/live_feed?' + Date.now();
+    document.getElementById('cam-stream').style.display = 'block';
+    document.getElementById('cam-holder').style.display = 'none';
+    document.getElementById('live-dot').classList.add('on');
+    document.getElementById('live-text').classList.add('on');
+    document.getElementById('live-text').textContent = 'LIVE';
+
+    pollTimer = setInterval(pollDetection, 1500);
+    ardTimer  = setInterval(pollArduino,   2000);
+  }
+
+  // ── STOP CAMERA ───────────────────────────────────────────
+  function stopCam() {
+    camOn = false;
+    fetch('/stop_live_camera');
+    document.getElementById('cam-stream').style.display = 'none';
+    document.getElementById('cam-holder').style.display = 'flex';
+    document.getElementById('live-dot').classList.remove('on');
+    document.getElementById('live-text').classList.remove('on');
+    document.getElementById('live-text').textContent = 'Camera Off';
+    clearInterval(pollTimer);
+    clearInterval(ardTimer);
+    clearAlertMode();
+  }
+
+  // ── POLL DETECTION STATE ──────────────────────────────────
+  async function pollDetection() {
+    try {
+      const data = await (await fetch('/detection_status')).json();
+
+      // Red screen for unknown
+      if (data.screen_red) {
+        document.body.classList.add('mode-red');
+        document.body.classList.remove('mode-green');
+      } else if (data.is_known) {
+        document.body.classList.add('mode-green');
+        document.body.classList.remove('mode-red');
+      } else {
+        clearAlertMode();
+      }
+
+      // Show correct popup
+      if (data.popup) {
+        if (data.is_known) {
+          // Known person popup (green)
+          document.getElementById('pk-name').textContent = data.person_name || '';
+          document.getElementById('pk-time').textContent = '🕐 ' + (data.alert_time || '');
+          if (data.person_image) {
+            document.getElementById('pk-img').src = data.person_image;
+          }
+          document.getElementById('popup-known').classList.add('show');
+          document.getElementById('popup-unknown').classList.remove('show');
+        } else {
+          // Unknown person popup (red)
+          document.getElementById('pu-name').textContent = data.person_name || 'Unknown';
+          document.getElementById('pu-time').textContent = '🕐 ' + (data.alert_time || '');
+          if (data.person_image) {
+            document.getElementById('pu-img').src = data.person_image;
+          }
+          document.getElementById('popup-unknown').classList.add('show');
+          document.getElementById('popup-known').classList.remove('show');
+        }
+      }
+    } catch(e) {}
+  }
+
+  // ── POLL ARDUINO STATUS ───────────────────────────────────
+  async function pollArduino() {
+    try {
+      const data = await (await fetch('/arduino_status')).json();
+
+      // Connection dot + port
+      const connDot  = document.getElementById('ard-conn-dot');
+      const connText = document.getElementById('ard-conn-text');
+      const portSpan = document.getElementById('ard-port');
+      if (data.connected) {
+        connDot.classList.add('on');
+        connText.textContent = 'Arduino: Connected ✓';
+        portSpan.textContent = data.port || '—';
+      } else {
+        connDot.classList.remove('on');
+        connText.textContent = 'Arduino: Not Connected';
+        portSpan.textContent = data.port || 'Not found';
+      }
+
+      // Sensor side
+      const sideDot  = document.getElementById('ard-side-dot');
+      const sideText = document.getElementById('ard-side-text');
+      if (data.trigger === 'right') {
+        sideDot.className = 'ard-dot blue';
+        sideText.textContent = 'Sensor: RIGHT triggered (0°)';
+      } else if (data.trigger === 'left') {
+        sideDot.className = 'ard-dot blue';
+        sideText.textContent = 'Sensor: LEFT triggered (180°)';
+      } else {
+        sideDot.className = 'ard-dot';
+        sideText.textContent = 'Sensor: Scanning…';
+      }
+
+      // Reply sent to Arduino
+      const repDot  = document.getElementById('ard-reply-dot');
+      const repText = document.getElementById('ard-reply-text');
+      if (data.reply === 1) {
+        repDot.className = 'ard-dot red';
+        repText.textContent = 'Reply → Arduino: 1 (UNKNOWN — Alarm)';
+      } else if (data.reply === 2) {
+        repDot.className = 'ard-dot on';
+        repText.textContent = 'Reply → Arduino: 2 (KNOWN — Welcome)';
+      } else {
+        repDot.className = 'ard-dot';
+        repText.textContent = 'Reply: Waiting…';
+      }
+    } catch(e) {}
+  }
+
+  // ── RECONNECT ARDUINO ────────────────────────────────────
+  async function reconnectArduino() {
+    const btn = document.getElementById('btn-reconnect');
+    btn.textContent = '⏳ Scanning ports…';
+    btn.disabled = true;
+    try {
+      const data = await (await fetch('/arduino_reconnect', { method: 'POST' })).json();
+      if (data.success) {
+        btn.textContent = `✅ Found on ${data.port}`;
+        btn.style.color = 'var(--green)';
+      } else {
+        btn.textContent = '❌ Not found — Retry';
+        btn.style.color = 'var(--red)';
+        btn.disabled = false;
+      }
+      // Re-poll immediately to refresh status bar
+      pollArduino();
+      setTimeout(() => {
+        btn.textContent = '🔄 Reconnect Arduino';
+        btn.style.color = '';
+        btn.disabled = false;
+      }, 3000);
+    } catch(e) {
+      btn.textContent = '❌ Error — Retry';
+      btn.disabled = false;
+    }
+  }
+
+  // ── DISMISS POPUP ─────────────────────────────────────────
+  function dismissPopup() {
+    fetch('/dismiss_alert', { method: 'POST' });
+    document.getElementById('popup-unknown').classList.remove('show');
+    document.getElementById('popup-known').classList.remove('show');
+    clearAlertMode();
+    setTimeout(() => location.reload(), 600);
+  }
+
+  // ── CLEAR ALERT MODE ──────────────────────────────────────
+  function clearAlertMode() {
+    document.body.classList.remove('mode-red', 'mode-green');
+    document.getElementById('popup-unknown').classList.remove('show');
+    document.getElementById('popup-known').classList.remove('show');
+  }
+
+  // ── CLEAR ALL ALERTS ──────────────────────────────────────
+  async function clearAll() {
+    if (!confirm('Clear all detection logs?')) return;
+    await fetch('/clear_alerts', { method: 'POST' });
+    document.getElementById('alerts-grid').innerHTML =
+      `<div class="empty" style="grid-column:1/-1">
+         <div class="ei">🎉</div><p>No detections yet.</p>
+       </div>`;
+  }
+</script>
+</body>
+</html>

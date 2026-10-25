@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Home Security — Members</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    /* ── ROOT COLORS ── */
+    :root {
+      --bg:      #0a0e1a;
+      --surface: #111827;
+      --card:    #161d2e;
+      --border:  #1e2d45;
+      --accent:  #00d4ff;
+      --green:   #22c55e;
+      --red:     #ef4444;
+      --text:    #e2e8f0;
+      --muted:   #64748b;
+      --fh: 'Syne', sans-serif;
+      --fb: 'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: var(--bg); color: var(--text); font-family: var(--fb); min-height: 100vh; }
+
+    /* ── NAV ── */
+    nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 2.5rem; height: 66px;
+      background: rgba(17,24,39,.97);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+      backdrop-filter: blur(14px);
+    }
+    .brand {
+      font-family: var(--fh); font-size: 1.3rem; font-weight: 800;
+      display: flex; align-items: center; gap: .55rem; color: var(--text);
+    }
+    .brand span { color: var(--accent); }
+    .pulse {
+      width: 9px; height: 9px; border-radius: 50%; background: var(--green);
+      animation: pr 1.4s ease infinite;
+    }
+    @keyframes pr {
+      0%   { box-shadow: 0 0 0 0 rgba(34,197,94,.7); }
+      70%  { box-shadow: 0 0 0 8px rgba(34,197,94,0); }
+      100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); }
+    }
+    .nav-links { display: flex; gap: .7rem; }
+    .nav-links a {
+      color: var(--muted); text-decoration: none; font-size: .88rem;
+      font-weight: 500; padding: .4rem .9rem; border-radius: 7px; transition: all .2s;
+    }
+    .nav-links a:hover  { color: var(--text); background: var(--border); }
+    .nav-links a.active { color: var(--accent); background: var(--border); }
+
+    /* ── FLASH MESSAGES ── */
+    .flash-wrap { padding: .7rem 2.5rem 0; }
+    .flash { padding: .85rem 1.2rem; border-radius: 9px; font-size: .88rem; margin-bottom: .4rem; }
+    .flash-success { background: rgba(34,197,94,.1); border: 1px solid rgba(34,197,94,.3); color: #4ade80; }
+    .flash-danger  { background: rgba(239,68,68,.1);  border: 1px solid rgba(239,68,68,.3);  color: #f87171; }
+
+    /* ── PAGE ── */
+    .page { max-width: 1380px; margin: 0 auto; padding: 2rem 2.5rem; }
+
+    /* ── HERO ── */
+    .hero { text-align: center; padding: 2.5rem 0 2rem; }
+    .hero h1 {
+      font-family: var(--fh); font-size: clamp(1.9rem, 4.5vw, 3.2rem);
+      font-weight: 800; letter-spacing: -1px; margin-bottom: .6rem;
+    }
+    .hero h1 em { font-style: normal; color: var(--accent); }
+    .hero p { color: var(--muted); font-size: 1rem; max-width: 480px; margin: 0 auto; }
+    .pills {
+      display: flex; gap: .8rem; justify-content: center;
+      margin: 1.5rem 0 2.2rem; flex-wrap: wrap;
+    }
+    .pill {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 50px; padding: .45rem 1.2rem;
+      font-size: .82rem; display: flex; align-items: center; gap: .45rem;
+    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; }
+    .dg  { background: var(--green); }
+    .db  { background: var(--accent); }
+
+    /* ── MAIN GRID ── */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 1.8rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) { .main-grid { grid-template-columns: 1fr; } }
+
+    /* ── CARD ── */
+    .card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+    }
+    .card-head {
+      padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: .7rem;
+    }
+    .card-icon {
+      width: 36px; height: 36px; border-radius: 9px;
+      display: flex; align-items: center; justify-content: center; font-size: 1rem;
+    }
+    .ci-blue  { background: rgba(0,212,255,.12); }
+    .ci-green { background: rgba(34,197,94,.12); }
+    .card-head h2 { font-family: var(--fh); font-size: .95rem; font-weight: 700; }
+    .card-body { padding: 1.5rem; }
+
+    /* ── FORM FIELDS ── */
+    .field { margin-bottom: 1.1rem; }
+    .field label {
+      display: block; font-size: .78rem; color: var(--muted);
+      margin-bottom: .4rem; font-weight: 500;
+      letter-spacing: .3px; text-transform: uppercase;
+    }
+    .field input[type="text"] {
+      width: 100%; background: var(--surface); border: 1px solid var(--border);
+      border-radius: 9px; padding: .72rem .95rem; color: var(--text);
+      font-family: var(--fb); font-size: .93rem; outline: none; transition: border .2s;
+    }
+    .field input[type="text"]:focus { border-color: var(--accent); }
+
+    /* ── PHOTO SOURCE TABS ── */
+    .src-tabs { display: flex; gap: .4rem; margin-bottom: 1rem; }
+    .src-tab {
+      flex: 1; padding: .58rem .5rem; cursor: pointer;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; color: var(--muted);
+      font-size: .84rem; font-weight: 500; text-align: center; transition: all .2s;
+    }
+    .src-tab.active {
+      background: rgba(0,212,255,.1);
+      border-color: var(--accent); color: var(--accent);
+    }
+
+    /* ── UPLOAD ZONE ── */
+    .upload-zone {
+      position: relative; border: 2px dashed var(--border); border-radius: 11px;
+      padding: 2rem 1rem; text-align: center; cursor: pointer; transition: all .2s;
+    }
+    .upload-zone:hover { border-color: var(--accent); background: rgba(0,212,255,.03); }
+    .upload-zone input[type="file"] {
+      position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer;
+    }
+    .uz-icon { font-size: 2.2rem; margin-bottom: .4rem; }
+    .uz-text { color: var(--muted); font-size: .83rem; }
+    .uz-sub  { color: var(--muted); font-size: .73rem; margin-top: .2rem; }
+    #upload-preview {
+      display: none; margin-top: .9rem; width: 100%;
+      max-height: 200px; object-fit: cover; border-radius: 9px; border: 1px solid var(--border);
+    }
+
+    /* ── CAMERA PANE ── */
+    /* Initially hidden. switchTab('camera') sets display:block */
+    #cam-pane { display: none; }
+
+    /* The live stream box */
+    .cam-box {
+      border: 2px solid var(--border); border-radius: 11px;
+      overflow: hidden; background: #000; min-height: 220px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #cam-stream {
+      /* hidden until Start Camera is clicked */
+      display: none;
+      width: 100%; max-height: 270px; object-fit: cover;
+    }
+    #cam-placeholder {
+      /* shown before camera starts */
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      color: var(--muted); gap: .6rem; padding: 1.5rem; text-align: center;
+    }
+    #cam-placeholder .ph-icon { font-size: 3rem; opacity: .3; }
+    #cam-placeholder p { font-size: .85rem; }
+
+    /* Camera action buttons row */
+    .cam-actions {
+      display: flex; gap: .5rem; margin-top: .8rem; flex-wrap: wrap;
+    }
+
+    /* Captured photo preview (shown after snapshot) */
+    #snap-result {
+      display: none;  /* shown after successful snapshot */
+      margin-top: .9rem;
+      background: rgba(34,197,94,.06);
+      border: 1px solid rgba(34,197,94,.3);
+      border-radius: 11px; padding: .9rem; text-align: center;
+    }
+    #snap-img {
+      width: 100%; max-height: 200px; object-fit: cover;
+      border-radius: 8px; border: 1px solid var(--border);
+      margin-bottom: .65rem;
+    }
+    .snap-ok    { color: var(--green); font-size: .85rem; font-weight: 600; }
+    .snap-retry {
+      color: var(--muted); font-size: .78rem; cursor: pointer;
+      text-decoration: underline; margin-left: .7rem;
+    }
+    .snap-retry:hover { color: var(--accent); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: .4rem;
+      padding: .65rem 1.2rem; border-radius: 9px; border: none;
+      font-family: var(--fb); font-size: .86rem; font-weight: 500;
+      cursor: pointer; transition: all .2s; text-decoration: none; white-space: nowrap;
+    }
+    .btn:disabled { opacity: .4; cursor: not-allowed; pointer-events: none; }
+    .btn-primary { background: var(--accent); color: #000; }
+    .btn-primary:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-green   { background: rgba(34,197,94,.13); border: 1px solid rgba(34,197,94,.35); color: var(--green); }
+    .btn-green:hover   { background: rgba(34,197,94,.24); }
+    .btn-danger  { background: rgba(239,68,68,.12);  border: 1px solid rgba(239,68,68,.3);  color: var(--red); }
+    .btn-danger:hover  { background: rgba(239,68,68,.22); }
+    .btn-sm   { padding: .44rem .9rem; font-size: .8rem; }
+    .btn-full { width: 100%; margin-top: .6rem; }
+
+    /* Hint text below submit button */
+    .submit-hint {
+      display: none; text-align: center;
+      color: var(--muted); font-size: .75rem; margin-top: .45rem;
+    }
+
+    /* ── MEMBERS GRID ── */
+    .cnt { margin-left: auto; font-size: .78rem; color: var(--muted); }
+    .mem-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+      gap: .9rem;
+    }
+    .mem-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 13px; overflow: hidden;
+      transition: transform .2s, border-color .2s;
+    }
+    .mem-card:hover { transform: translateY(-3px); border-color: rgba(0,212,255,.35); }
+    .mem-card img {
+      width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: var(--bg); display: block;
+    }
+    .mem-info { padding: .7rem; }
+    .mem-name { font-weight: 600; font-size: .88rem; margin-bottom: .2rem; }
+    .mem-rel {
+      display: inline-block; font-size: .72rem;
+      background: rgba(0,212,255,.07); border: 1px solid rgba(0,212,255,.2);
+      color: var(--accent); padding: .12rem .5rem;
+      border-radius: 50px; margin-bottom: .55rem;
+    }
+    .mem-del {
+      display: block; width: 100%; background: none; border: none;
+      color: var(--muted); font-size: .75rem; cursor: pointer;
+      padding: .28rem; border-radius: 5px; transition: all .2s;
+    }
+    .mem-del:hover { color: var(--red); background: rgba(239,68,68,.07); }
+
+    /* Empty state */
+    .empty { text-align: center; padding: 2.5rem 1rem; color: var(--muted); }
+    .empty .ei { font-size: 2.8rem; opacity: .3; margin-bottom: .7rem; }
+
+    /* ── DETECTION BANNER ── */
+    .det-banner {
+      background: linear-gradient(135deg, rgba(0,212,255,.07), rgba(124,58,237,.07));
+      border: 1px solid rgba(0,212,255,.18);
+      border-radius: 16px; padding: 1.8rem; text-align: center; margin-top: 1.4rem;
+    }
+    .det-banner h3 { font-family: var(--fh); font-size: 1.1rem; font-weight: 700; margin-bottom: .35rem; }
+    .det-banner p  { color: var(--muted); font-size: .88rem; margin-bottom: 1.1rem; }
+    .btn-detect {
+      background: linear-gradient(135deg, var(--accent), #7c3aed);
+      color: #fff; padding: .8rem 2.2rem; border-radius: 50px;
+      font-size: .95rem; border: none; cursor: pointer;
+    }
+    .btn-detect:hover { opacity: .88; transform: translateY(-2px); }
+  </style>
+</head>
+<body>
+
+<!-- ============================================================
+     NAV
+============================================================ -->
+<nav>
+  <div class="brand">
+    <div class="pulse"></div>
+    Home <span>Security</span>
+  </div>
+  <div class="nav-links">
+    <a href="{{ url_for('index') }}" class="active">👥 Members</a>
+    <a href="{{ url_for('detection') }}">📷 Detection</a>
+  </div>
+</nav>
+
+<!-- Flash messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+    <div class="flash-wrap">
+      {% for cat, msg in messages %}
+        <div class="flash flash-{{ cat }}">{{ msg }}</div>
+      {% endfor %}
+    </div>
+  {% endif %}
+{% endwith %}
+
+<!-- ============================================================
+     PAGE
+============================================================ -->
+<div class="page">
+
+  <!-- Hero -->
+  <div class="hero">
+    <h1>Home <em>Security</em> System</h1>
+    <p>Register family members so the system knows who belongs — and alerts you when a stranger is detected.</p>
+    <div class="pills">
+      <div class="pill"><div class="dot dg"></div>{{ members|length }} Members Registered</div>
+      <div class="pill"><div class="dot db"></div>Face Recognition Ready</div>
+    </div>
+  </div>
+
+  <!-- Main two-column layout -->
+  <div class="main-grid">
+
+    <!-- ============================================================
+         LEFT — ADD MEMBER FORM
+    ============================================================ -->
+    <div class="card">
+      <div class="card-head">
+        <div class="card-icon ci-blue">➕</div>
+        <h2>Add Family Member</h2>
+      </div>
+      <div class="card-body">
+
+        <!--
+          FORM NOTES:
+          - If user uploads a file  → "image" file input is used
+          - If user uses camera     → hidden "captured_server_path" is filled after snapshot
+          - Backend checks captured_server_path first, then falls back to image file
+        -->
+        <form id="add-form" method="POST"
+              action="{{ url_for('add_member') }}"
+              enctype="multipart/form-data">
+
+          <!-- Hidden: server path of camera snapshot (filled by JS) -->
+          <input type="hidden" id="captured-server-path" name="captured_server_path" value="" />
+
+          <!-- Name -->
+          <div class="field">
+            <label>Full Name</label>
+            <input type="text" id="inp-name" name="name"
+                   placeholder="e.g. Ahmed Khan" required />
+          </div>
+
+          <!-- Relation -->
+          <div class="field">
+            <label>Relation</label>
+            <input type="text" id="inp-relation" name="relation"
+                   placeholder="e.g. Father, Mother, Brother, Sister…" required />
+          </div>
+
+          <!-- Photo Source -->
+          <div class="field">
+            <label>Photo</label>
+
+            <!-- Tab buttons: Upload vs Camera -->
+            <div class="src-tabs">
+              <div class="src-tab active" id="tab-upload"
+                   onclick="switchTab('upload')">
+                📁 Upload Photo
+              </div>
+              <div class="src-tab" id="tab-camera"
+                   onclick="switchTab('camera')">
+                📷 Use Camera
+              </div>
+            </div>
+
+            <!-- ── UPLOAD PANE ─────────────────────────────── -->
+            <div id="upload-pane">
+              <div class="upload-zone">
+                <input type="file" id="file-input" name="image"
+                       accept="image/*" onchange="onFileChosen(this)" />
+                <div class="uz-icon">🖼️</div>
+                <p class="uz-text">Click to browse or drag photo here</p>
+                <p class="uz-sub">PNG · JPG · JPEG · WEBP</p>
+              </div>
+              <!-- Preview of chosen file -->
+              <img id="upload-preview" src="" alt="photo preview" />
+            </div>
+            <!-- ── END UPLOAD PANE ─────────────────────────── -->
+
+            <!-- ── CAMERA PANE ─────────────────────────────── -->
+            <div id="cam-pane">
+
+              <!-- Live stream box -->
+              <div class="cam-box">
+                <!-- Placeholder before camera starts -->
+                <div id="cam-placeholder">
+                  <div class="ph-icon">📷</div>
+                  <p>Click <strong>Start Camera</strong> below<br/>to open your webcam</p>
+                </div>
+                <!-- Live stream — shown after Start Camera -->
+                <img id="cam-stream" src="" alt="live camera" />
+              </div>
+
+              <!-- Camera control buttons -->
+              <div class="cam-actions">
+                <button type="button" class="btn btn-green btn-sm"
+                        onclick="startCam()">
+                  ▶ Start Camera
+                </button>
+
+                <button type="button" class="btn btn-primary btn-sm"
+                        id="btn-snap" onclick="takeSnap()" disabled>
+                  📸 Capture Photo
+                </button>
+
+                <button type="button" class="btn btn-danger btn-sm"
+                        onclick="stopCam()">
+                  ⏹ Stop
+                </button>
+              </div>
+
+              <!-- Snapshot result — shown after photo is captured -->
+              <div id="snap-result">
+                <img id="snap-img" src="" alt="captured photo" />
+                <div>
+                  <span class="snap-ok">✅ Photo captured! Ready to save.</span>
+                  <span class="snap-retry" onclick="retryCapture()">↺ Retake</span>
+                </div>
+              </div>
+
+            </div>
+            <!-- ── END CAMERA PANE ─────────────────────────── -->
+
+          </div><!-- /field photo -->
+
+          <!-- Submit -->
+          <button type="submit" id="btn-submit" class="btn btn-primary btn-full">
+            ✅ Add Member
+          </button>
+          <p class="submit-hint" id="submit-hint">
+            📸 Please capture a photo first, then click Add Member.
+          </p>
+
+        </form>
+      </div>
+    </div>
+    <!-- ── END LEFT CARD ── -->
+
+
+    <!-- ============================================================
+         RIGHT — REGISTERED MEMBERS + DETECTION LINK
+    ============================================================ -->
+    <div>
+
+      <!-- Members list card -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-icon ci-green">👨‍👩‍👧‍👦</div>
+          <h2>Registered Members</h2>
+          <span class="cnt">{{ members|length }} total</span>
+        </div>
+        <div class="card-body">
+
+          {% if members %}
+            <div class="mem-grid">
+              {% for m in members %}
+              <div class="mem-card">
+                <img src="{{ m.image }}" alt="{{ m.name }}"
+                     onerror="this.src='https://ui-avatars.com/api/?name={{ m.name }}&background=111827&color=00d4ff&size=200'" />
+                <div class="mem-info">
+                  <div class="mem-name">{{ m.name }}</div>
+                  <div class="mem-rel">{{ m.relation }}</div>
+                  <form method="POST"
+                        action="{{ url_for('delete_member', member_id=m.id) }}"
+                        onsubmit="return confirm('Remove {{ m.name }} from the system?')">
+                    <button type="submit" class="mem-del">🗑 Remove</button>
+                  </form>
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+          {% else %}
+            <div class="empty">
+              <div class="ei">👤</div>
+              <p>No members added yet.<br/>Use the form on the left to add your first family member.</p>
+            </div>
+          {% endif %}
+
+        </div>
+      </div>
+
+      <!-- Detection link banner -->
+      <div class="det-banner">
+        <h3>🎥 Start Live Detection</h3>
+        <p>Open the detection camera to identify family members in real time and get instant alerts for unknown visitors.</p>
+        <a href="{{ url_for('detection') }}" class="btn btn-detect">Open Detection Camera →</a>
+      </div>
+
+    </div>
+    <!-- ── END RIGHT ── -->
+
+  </div><!-- /main-grid -->
+</div><!-- /page -->
+
+
+<!-- ============================================================
+     JAVASCRIPT — Camera + Form Logic
+============================================================ -->
+<script>
+  // Which tab is active: 'upload' or 'camera'
+  let activeTab = 'upload';
+
+  // ── SWITCH TAB ──────────────────────────────────────────────
+  function switchTab(tab) {
+    activeTab = tab;
+
+    // Update tab button styles
+    document.getElementById('tab-upload').classList.toggle('active', tab === 'upload');
+    document.getElementById('tab-camera').classList.toggle('active', tab === 'camera');
+
+    // Show / hide panes
+    document.getElementById('upload-pane').style.display = (tab === 'upload') ? 'block' : 'none';
+    document.getElementById('cam-pane').style.display    = (tab === 'camera') ? 'block' : 'none';
+
+    // If switching away from camera, stop it
+    if (tab === 'upload') {
+      stopCam();
+      // Show hint only if camera had a snapshot pending
+      showHint(false);
+    } else {
+      // Camera tab — if no snapshot yet, show hint
+      const path = document.getElementById('captured-server-path').value;
+      showHint(path === '');
+    }
+  }
+
+  // ── FILE UPLOAD CHOSEN ───────────────────────────────────────
+  function onFileChosen(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const prev = document.getElementById('upload-preview');
+        prev.src = e.target.result;
+        prev.style.display = 'block';
+      };
+      reader.readAsDataURL(input.files[0]);
+
+      // Clear any camera path so backend uses the file
+      document.getElementById('captured-server-path').value = '';
+      showHint(false);
+    }
+  }
+
+  // ── START CAMERA ─────────────────────────────────────────────
+  function startCam() {
+    const stream = document.getElementById('cam-stream');
+    const holder = document.getElementById('cam-placeholder');
+    const snapBtn = document.getElementById('btn-snap');
+
+    // Set the stream source to Flask live feed
+    stream.src = '/capture_feed?' + Date.now();
+    stream.style.display = 'block';
+    holder.style.display = 'none';
+
+    // Enable capture button
+    snapBtn.disabled = false;
+
+    // Reset any previous snapshot result
+    document.getElementById('snap-result').style.display = 'none';
+    document.getElementById('captured-server-path').value = '';
+    showHint(true);
+  }
+
+  // ── STOP CAMERA ──────────────────────────────────────────────
+  function stopCam() {
+    // Tell Flask to stop the camera stream
+    fetch('/stop_capture_camera');
+
+    const stream = document.getElementById('cam-stream');
+    const holder = document.getElementById('cam-placeholder');
+    const snapBtn = document.getElementById('btn-snap');
+
+    stream.src = '';
+    stream.style.display = 'none';
+    holder.style.display = 'flex';
+    snapBtn.disabled = true;
+  }
+
+  // ── TAKE SNAPSHOT ─────────────────────────────────────────────
+  // Calls Flask route /take_snapshot
+  // Flask saves the current frame to disk and returns the file path
+  async function takeSnap() {
+    try {
+      const res  = await fetch('/take_snapshot');
+      const data = await res.json();
+
+      if (!data.success) {
+        alert('⚠️ ' + data.message);
+        return;
+      }
+
+      // Show the captured image preview
+      const snapImg = document.getElementById('snap-img');
+      snapImg.src   = data.image_url + '?' + Date.now();
+
+      document.getElementById('snap-result').style.display = 'block';
+
+      // Save the server path into the hidden input
+      // The form will submit this path so backend can read the face
+      document.getElementById('captured-server-path').value = data.image_path;
+
+      // Stop the live stream — photo is already saved
+      stopCam();
+
+      // Hide hint — photo is ready
+      showHint(false);
+
+    } catch (err) {
+      alert('Camera error. Please try again.');
+      console.error(err);
+    }
+  }
+
+  // ── RETAKE PHOTO ─────────────────────────────────────────────
+  function retryCapture() {
+    // Hide old result
+    document.getElementById('snap-result').style.display = 'none';
+    document.getElementById('captured-server-path').value = '';
+    showHint(true);
+    // Restart camera
+    startCam();
+  }
+
+  // ── SHOW / HIDE HINT TEXT ────────────────────────────────────
+  function showHint(show) {
+    document.getElementById('submit-hint').style.display = show ? 'block' : 'none';
+  }
+
+  // ── FORM SUBMIT GUARD ────────────────────────────────────────
+  document.getElementById('add-form').addEventListener('submit', function(e) {
+    if (activeTab === 'camera') {
+      const path = document.getElementById('captured-server-path').value.trim();
+      if (!path) {
+        e.preventDefault();
+        alert('📸 Please capture a photo first using the camera, then click Add Member.');
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
