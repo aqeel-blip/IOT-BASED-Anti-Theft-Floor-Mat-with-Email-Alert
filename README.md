@@ -1,4 +1,11 @@
-# IOT-BASED-Anti-Theft-Floor-Mat-with-Email-Alert
+﻿# IOT-BASED-Anti-Theft-Floor-Mat-with-Email-Alert
+
+## Demo Video
+
+[![Watch the demo video](https://img.youtube.com/vi/vaVrfcU5Gao/maxresdefault.jpg)](https://youtu.be/vaVrfcU5Gao)
+
+Watch on YouTube: https://youtu.be/vaVrfcU5Gao
+
 
 This project is a low-cost security system that hides inside a floor mat.
 
