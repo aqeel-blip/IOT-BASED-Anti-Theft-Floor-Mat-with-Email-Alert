@@ -24,6 +24,8 @@ Includes a cooldown so one visitor doesn’t trigger many emails
 Has a web dashboard built with Flask
 Is cheap and easy to build
 
-# Hardware: Arduino Nano (ATmega328P), piezoelectric sensor, buzzer, SG90 servo (webcam mount), USB webcam, laptop
+# Hardware: 
+Arduino Nano (ATmega328P), piezoelectric sensor, buzzer, SG90 servo (webcam mount), USB webcam, laptop
 
-# Software: Python, Flask, OpenCV, dlib, smtplib/yagmail, Arduino C
+# Software:
+Python, Flask, OpenCV, dlib, smtplib/yagmail, Arduino C
