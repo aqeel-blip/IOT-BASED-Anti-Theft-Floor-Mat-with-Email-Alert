@@ -5,7 +5,7 @@ This project is a low-cost security system that hides inside a floor mat.
 # How it works, step by step:
 
 Someone steps on the mat, and a piezoelectric sensor feels the pressure.
-An Arduino Nano reads the sensor and tells the laptop that someone is there.
+1.An Arduino Nano reads the sensor and tells the laptop that someone is there.
 A USB webcam takes a picture of the person.
 The laptop compares the face with known faces, using OpenCV and dlib (ResNet-34).
 If the face is unknown, the system sends an email alert through Gmail.
